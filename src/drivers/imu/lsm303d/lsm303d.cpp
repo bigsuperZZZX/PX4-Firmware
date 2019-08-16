@@ -1589,7 +1589,7 @@ LSM303D::measure()
 		poll_notify(POLLIN);
 
 		if (!(_pub_blocked)) {
-			/* publish it */
+            /* publish it */
 			orb_publish(ORB_ID(sensor_accel), _accel_topic, &accel_report);
 		}
 	}

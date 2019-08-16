@@ -2073,13 +2073,14 @@ MPU6000::measure()
 		_gyro->parent_poll_notify();
 	}
 
-	if (accel_notify && !(_pub_blocked)) {
-		/* publish it */
+    if (accel_notify && !(_pub_blocked)) {
+        /* publish it */
 		orb_publish(ORB_ID(sensor_accel), _accel_topic, &arb);
 	}
 
 	if (gyro_notify && !(_pub_blocked)) {
-		/* publish it */
+        /* publish it */
+
 		orb_publish(ORB_ID(sensor_gyro), _gyro->_gyro_topic, &grb);
 	}
 

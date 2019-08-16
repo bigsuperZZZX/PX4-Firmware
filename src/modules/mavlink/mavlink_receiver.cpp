@@ -1059,71 +1059,74 @@ void
 MavlinkReceiver::handle_message_set_actuator_control_target(mavlink_message_t *msg)
 {
 	mavlink_set_actuator_control_target_t set_actuator_control_target;
-	mavlink_msg_set_actuator_control_target_decode(msg, &set_actuator_control_target);
+    mavlink_msg_set_actuator_control_target_decode(msg, &set_actuator_control_target);
 
-	struct offboard_control_mode_s offboard_control_mode = {};
+    struct offboard_control_mode_s offboard_control_mode = {};
 
-	struct actuator_controls_s actuator_controls = {};
+    struct actuator_controls_s actuator_controls = {};
 
-	bool values_finite =
-		PX4_ISFINITE(set_actuator_control_target.controls[0]) &&
-		PX4_ISFINITE(set_actuator_control_target.controls[1]) &&
-		PX4_ISFINITE(set_actuator_control_target.controls[2]) &&
-		PX4_ISFINITE(set_actuator_control_target.controls[3]) &&
-		PX4_ISFINITE(set_actuator_control_target.controls[4]) &&
-		PX4_ISFINITE(set_actuator_control_target.controls[5]) &&
-		PX4_ISFINITE(set_actuator_control_target.controls[6]) &&
-		PX4_ISFINITE(set_actuator_control_target.controls[7]);
-
-	if ((mavlink_system.sysid == set_actuator_control_target.target_system ||
-	     set_actuator_control_target.target_system == 0) &&
-	    (mavlink_system.compid == set_actuator_control_target.target_component ||
-	     set_actuator_control_target.target_component == 0) &&
-	    values_finite) {
-
-		/* ignore all since we are setting raw actuators here */
-		offboard_control_mode.ignore_thrust             = true;
-		offboard_control_mode.ignore_attitude           = true;
-		offboard_control_mode.ignore_bodyrate           = true;
-		offboard_control_mode.ignore_position           = true;
-		offboard_control_mode.ignore_velocity           = true;
-		offboard_control_mode.ignore_acceleration_force = true;
-
-		offboard_control_mode.timestamp = hrt_absolute_time();
-
-		if (_offboard_control_mode_pub == nullptr) {
-			_offboard_control_mode_pub = orb_advertise(ORB_ID(offboard_control_mode), &offboard_control_mode);
-
-		} else {
-			orb_publish(ORB_ID(offboard_control_mode), _offboard_control_mode_pub, &offboard_control_mode);
-		}
+    bool values_finite =
+        PX4_ISFINITE(set_actuator_control_target.controls[0]) &&
+        PX4_ISFINITE(set_actuator_control_target.controls[1]) &&
+        PX4_ISFINITE(set_actuator_control_target.controls[2]) &&
+        PX4_ISFINITE(set_actuator_control_target.controls[3]) &&
+        PX4_ISFINITE(set_actuator_control_target.controls[4]) &&
+        PX4_ISFINITE(set_actuator_control_target.controls[5]) &&
+        PX4_ISFINITE(set_actuator_control_target.controls[6]) &&
+        PX4_ISFINITE(set_actuator_control_target.controls[7]);
 
 
-		/* If we are in offboard control mode, publish the actuator controls */
-		bool updated;
-		orb_check(_control_mode_sub, &updated);
 
-		if (updated) {
-			orb_copy(ORB_ID(vehicle_control_mode), _control_mode_sub, &_control_mode);
-		}
+    if ((mavlink_system.sysid == set_actuator_control_target.target_system ||
+         set_actuator_control_target.target_system == 0) &&
+        (mavlink_system.compid == set_actuator_control_target.target_component ||
+         set_actuator_control_target.target_component == 0) &&
+        values_finite) {
 
-		if (_control_mode.flag_control_offboard_enabled) {
+        /* ignore all since we are setting raw actuators here */
+        offboard_control_mode.ignore_thrust             = true;
+        offboard_control_mode.ignore_attitude           = true;
+        offboard_control_mode.ignore_bodyrate           = true;
+        offboard_control_mode.ignore_position           = true;
+        offboard_control_mode.ignore_velocity           = true;
+        offboard_control_mode.ignore_acceleration_force = true;
 
-			actuator_controls.timestamp = hrt_absolute_time();
+        offboard_control_mode.timestamp = hrt_absolute_time();
 
-			/* Set duty cycles for the servos in actuator_controls_0 */
-			for (size_t i = 0; i < 8; i++) {
-				actuator_controls.control[i] = set_actuator_control_target.controls[i];
-			}
+        if (_offboard_control_mode_pub == nullptr) {
+            _offboard_control_mode_pub = orb_advertise(ORB_ID(offboard_control_mode), &offboard_control_mode);
 
-			if (_actuator_controls_pub == nullptr) {
-				_actuator_controls_pub = orb_advertise(ORB_ID(actuator_controls_0), &actuator_controls);
+        } else {
+            orb_publish(ORB_ID(offboard_control_mode), _offboard_control_mode_pub, &offboard_control_mode);
+        }
 
-			} else {
-				orb_publish(ORB_ID(actuator_controls_0), _actuator_controls_pub, &actuator_controls);
-			}
-		}
-	}
+
+        /* If we are in offboard control mode, publish the actuator controls */
+        bool updated;
+        orb_check(_control_mode_sub, &updated);
+
+        if (updated) {
+            orb_copy(ORB_ID(vehicle_control_mode), _control_mode_sub, &_control_mode);
+        }
+
+        if (_control_mode.flag_control_offboard_enabled) {
+
+            actuator_controls.timestamp = hrt_absolute_time();
+
+            /* Set duty cycles for the servos in actuator_controls_0 */
+            for (size_t i = 0; i < 8; i++) {
+                actuator_controls.control[i] = set_actuator_control_target.controls[i];
+            }
+
+            if (_actuator_controls_pub == nullptr) {
+                _actuator_controls_pub = orb_advertise(ORB_ID(actuator_controls_0), &actuator_controls);
+
+            } else {
+                orb_publish(ORB_ID(actuator_controls_0), _actuator_controls_pub, &actuator_controls);
+                //PX4_INFO("%8.4f %8.4f %8.4f %8.4f ",(double)actuator_controls.control[0],(double)actuator_controls.control[1],(double)actuator_controls.control[2],(double)actuator_controls.control[3]);
+            }
+        }
+    }
 
 }
 
@@ -1945,6 +1948,7 @@ MavlinkReceiver::handle_message_hil_sensor(mavlink_message_t *msg)
 			_gyro_pub = orb_advertise(ORB_ID(sensor_gyro), &gyro);
 
 		} else {
+            PX4_INFO("gyro");
 			orb_publish(ORB_ID(sensor_gyro), _gyro_pub, &gyro);
 		}
 	}

@@ -86,6 +86,7 @@
 #include <uORB/topics/sensor_preflight.h>
 #include <uORB/topics/vehicle_air_data.h>
 #include <uORB/topics/vehicle_magnetometer.h>
+#include <uORB/topics/fault_injection.h>    //zxzxzxzx
 
 #include <DevMgr.hpp>
 
@@ -167,6 +168,7 @@ private:
 	int		_diff_pres_sub{-1};			/**< raw differential pressure subscription */
 	int		_vcontrol_mode_sub{-1};		/**< vehicle control mode subscription */
 	int 		_params_sub{-1};			/**< notification of parameter updates */
+    int  _t_fault_injection;	//zxzxzxzx
 
 	orb_advert_t	_sensor_pub{nullptr};			/**< combined sensor data topic */
 	orb_advert_t	_airdata_pub{nullptr};			/**< combined sensor data topic */
@@ -611,6 +613,8 @@ Sensors::run()
 
 	_actuator_ctrl_0_sub = orb_subscribe(ORB_ID(actuator_controls_0));
 
+    _t_fault_injection = orb_subscribe(ORB_ID(fault_injection));  //zxzxzxzx
+
 	/* get a set of initial values */
 	_voted_sensors_update.sensors_poll(raw, airdata, magnetometer);
 
@@ -680,6 +684,32 @@ Sensors::run()
 		adc_poll();
 
 		diff_pres_poll(airdata);
+
+        struct fault_injection_s fault_injection_topic;  //zxzxzxzx
+        fault_injection_topic.fault_name = 0;
+        orb_copy(ORB_ID(fault_injection), _t_fault_injection, &fault_injection_topic); //zxzxzxzx
+        if(fault_injection_topic.fault_name == 5){
+            raw.accelerometer_m_s2[0] = 0;
+            raw.accelerometer_m_s2[1] = 0;
+            raw.accelerometer_m_s2[2] = 0;
+        }else if(fault_injection_topic.fault_name == 6){
+            raw.gyro_rad[0] = 0;
+            raw.gyro_rad[1] = 0;
+            raw.gyro_rad[2] = 0;
+        }else if(fault_injection_topic.fault_name == 7){
+            magnetometer.magnetometer_ga[0] = 0;
+            magnetometer.magnetometer_ga[1] = 0;
+            magnetometer.magnetometer_ga[2] = 0;
+        }else if(fault_injection_topic.fault_name == 8){
+            airdata.baro_pressure_pa = 0;
+            airdata.rho = 0;
+            airdata.baro_alt_meter = 10000;
+        }
+//        static int runs_count = 0;
+//        runs_count ++;
+//        if(runs_count % 500 == 0){
+//            PX4_INFO("fxxk!!! %d %d",fault_injection_topic.fault_name,_t_fault_injection);
+//        }
 
 		if (raw.timestamp > 0) {
 

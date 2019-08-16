@@ -829,7 +829,7 @@ int UavcanNode::run()
 
 	update_params();
 
-	int params_sub = orb_subscribe(ORB_ID(parameter_update));
+    int params_sub = orb_subscribe(ORB_ID(parameter_update));
 
 	while (!_task_should_exit) {
 

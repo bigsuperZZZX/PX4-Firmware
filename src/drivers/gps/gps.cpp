@@ -78,6 +78,8 @@
 #include <uORB/topics/satellite_info.h>
 #include <uORB/topics/gps_inject_data.h>
 #include <uORB/topics/gps_dump.h>
+#include <uORB/topics/fault_injection.h>  //zxzxzxzx
+
 
 #include <board_config.h>
 
@@ -169,6 +171,8 @@ private:
 	Instance 			_instance;
 
 	int _orb_inject_data_fd;
+    int  _t_fault_injection;	//zxzxzxzx
+
 
 	orb_advert_t _dump_communication_pub;			///< if non-null, dump communication
 	gps_dump_s *_dump_to_device;
@@ -628,6 +632,7 @@ GPS::run()
 	}
 
 	_orb_inject_data_fd = orb_subscribe(ORB_ID(gps_inject_data));
+    _t_fault_injection = orb_subscribe(ORB_ID(fault_injection));  //zxzxzxzx
 
 	initializeCommunicationDump();
 
@@ -720,9 +725,19 @@ GPS::run()
 				while ((helper_ret = _helper->receive(TIMEOUT_5HZ)) > 0 && !should_exit()) {
 
 					if (helper_ret & 1) {
-						publish();
 
-						last_rate_count++;
+
+                        struct fault_injection_s fault_injection_topic;  //zxzxzxzx
+                        orb_copy(ORB_ID(fault_injection), _t_fault_injection, &fault_injection_topic);
+
+                        if(fault_injection_topic.fault_name != 9){
+
+                            //PX4_INFO("GPS pub:%d",fault_injection_topic.fault_name);
+
+                            publish();
+
+                            last_rate_count++;
+                        }
 					}
 
 					if (_p_report_sat_info && (helper_ret & 2)) {
@@ -900,7 +915,7 @@ GPS::print_status()
 void
 GPS::publish()
 {
-	if (_instance == Instance::Main || _is_gps_main_advertised) {
+    if (_instance == Instance::Main || _is_gps_main_advertised) {
 		orb_publish_auto(ORB_ID(vehicle_gps_position), &_report_gps_pos_pub, &_report_gps_pos, &_gps_orb_instance,
 				 ORB_PRIO_DEFAULT);
 		_is_gps_main_advertised = true;

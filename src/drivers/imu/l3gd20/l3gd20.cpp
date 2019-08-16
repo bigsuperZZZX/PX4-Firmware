@@ -229,7 +229,7 @@ private:
 	float			_gyro_range_rad_s;
 	orb_advert_t		_gyro_topic;
 	int			_orb_class_instance;
-	int			_class_instance;
+    int			_class_instance;
 
 	unsigned		_current_rate;
 	unsigned		_orientation;
@@ -483,8 +483,8 @@ L3GD20::init()
 					  &_orb_class_instance, (external()) ? ORB_PRIO_VERY_HIGH : ORB_PRIO_DEFAULT);
 
 	if (_gyro_topic == nullptr) {
-		DEVICE_DEBUG("failed to create sensor_gyro publication");
-	}
+        DEVICE_DEBUG("failed to create sensor_gyro publication");
+    }
 
 	ret = OK;
 out:
@@ -557,7 +557,7 @@ L3GD20::read(struct file *filp, char *buffer, size_t buflen)
 	}
 
 	/* manual measurement */
-	_reports->flush();
+    _reports->flush();
 	measure();
 
 	/* measurement will have generated a report, copy it out */
@@ -900,9 +900,9 @@ L3GD20::reset()
 void
 L3GD20::measure_trampoline(void *arg)
 {
-	L3GD20 *dev = (L3GD20 *)arg;
+    L3GD20 *dev = (L3GD20 *)arg;
 
-	/* make another measurement */
+    /* make another measurement */
 	dev->measure();
 }
 
@@ -1055,9 +1055,9 @@ L3GD20::measure()
 		poll_notify(POLLIN);
 
 		/* publish for subscribers */
-		if (!(_pub_blocked)) {
-			/* publish it */
-			orb_publish(ORB_ID(sensor_gyro), _gyro_topic, &report);
+        if (!(_pub_blocked)) {
+            /* publish it */
+            orb_publish(ORB_ID(sensor_gyro), _gyro_topic, &report);
 		}
 	}
 

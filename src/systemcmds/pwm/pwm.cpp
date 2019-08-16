@@ -218,7 +218,7 @@ pwm_main(int argc, char *argv[])
 	if (argc < 2) {
 		usage(nullptr);
 		return 1;
-	}
+    }
 
 	int myoptind = 1;
 	const char *myoptarg = nullptr;

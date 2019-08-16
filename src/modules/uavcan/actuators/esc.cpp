@@ -169,6 +169,12 @@ void UavcanEscController::update_outputs(float *outputs, unsigned num_outputs)
 
 	// Publish actuator outputs
 	if (_actuator_outputs_pub != nullptr) {
+        static int runs_count = 0;
+        runs_count ++;
+        if(runs_count % 125 == 0){
+            //PX4_INFO("fxxk!!! %d %d",fault_injection_topic.fault_name,_t_fault_injection);
+            PX4_INFO("%5f %5f %5f %5f",(double)actuator_outputs.output[0],(double)actuator_outputs.output[1],(double)actuator_outputs.output[2],(double)actuator_outputs.output[3]);
+        }
 		orb_publish(ORB_ID(actuator_outputs), _actuator_outputs_pub, &actuator_outputs);
 
 	} else {

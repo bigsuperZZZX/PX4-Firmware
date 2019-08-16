@@ -1246,11 +1246,13 @@ BMI160::measure()
 
 	if (accel_notify && !(_pub_blocked)) {
 		/* publish it */
+        PX4_INFO("accel");
 		orb_publish(ORB_ID(sensor_accel), _accel_topic, &arb);
 	}
 
 	if (gyro_notify && !(_pub_blocked)) {
 		/* publish it */
+        PX4_INFO("gyro");
 		orb_publish(ORB_ID(sensor_gyro), _gyro->_gyro_topic, &grb);
 	}
 

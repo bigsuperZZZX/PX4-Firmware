@@ -1,0 +1,2 @@
+/usr/bin/ar qc libpx4iofirmware.a  CMakeFiles/px4iofirmware.dir/hx_stream.o CMakeFiles/px4iofirmware.dir/adc.o CMakeFiles/px4iofirmware.dir/controls.o CMakeFiles/px4iofirmware.dir/mixer.o CMakeFiles/px4iofirmware.dir/px4io.o CMakeFiles/px4iofirmware.dir/registers.o CMakeFiles/px4iofirmware.dir/safety.o CMakeFiles/px4iofirmware.dir/serial.o
+/usr/bin/ranlib libpx4iofirmware.a

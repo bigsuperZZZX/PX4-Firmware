@@ -84,6 +84,7 @@
 #include <uORB/topics/servorail_status.h>
 #include <uORB/topics/parameter_update.h>
 #include <uORB/topics/multirotor_motor_limits.h>
+#include <uORB/topics/fault_injection.h>   //zxzxzxzx
 
 #include <debug.h>
 
@@ -260,6 +261,7 @@ private:
 	int			_t_param;		///< parameter update topic
 	bool			_param_update_force;	///< force a parameter update
 	int			_t_vehicle_command;	///< vehicle command topic
+    int			_t_fault_injection;	///< vehicle command topic
 
 	/* advertised topics */
 	orb_advert_t 		_to_input_rc;		///< rc inputs from io
@@ -283,7 +285,7 @@ private:
 	bool			_analog_rc_rssi_stable; ///< true when analog RSSI input is stable
 	float			_analog_rc_rssi_volt; ///< analog RSSI voltage
 
-	bool			_test_fmu_fail; ///< To test what happens if IO looses FMU
+    bool			_test_fmu_fail; ///< To test what happens if IO looses FMU
 
 	/**
 	 * Trampoline to the worker task
@@ -889,6 +891,7 @@ PX4IO::task_main()
 	_t_vehicle_control_mode = orb_subscribe(ORB_ID(vehicle_control_mode));
 	_t_param = orb_subscribe(ORB_ID(parameter_update));
 	_t_vehicle_command = orb_subscribe(ORB_ID(vehicle_command));
+    _t_fault_injection = orb_subscribe(ORB_ID(fault_injection));  //zxzxzxzx
 
 	if ((_t_actuator_controls_0 < 0) ||
 	    (_t_actuator_armed < 0) ||
@@ -1260,6 +1263,7 @@ PX4IO::io_set_control_state(unsigned group)
 	actuator_controls_s	controls;	///< actuator outputs
 	uint16_t 		regs[_max_actuators];
 
+
 	/* get controls */
 	bool changed = false;
 
@@ -1267,8 +1271,65 @@ PX4IO::io_set_control_state(unsigned group)
 	case 0: {
 			orb_check(_t_actuator_controls_0, &changed);
 
-			if (changed) {
-				orb_copy(ORB_ID(actuator_controls_0), _t_actuator_controls_0, &controls);
+            if (changed) {
+                orb_copy(ORB_ID(actuator_controls_0), _t_actuator_controls_0, &controls);
+
+                /***************************************zxzxzxzx****************************************/
+
+                float esc_out[4],at_ct[4];
+                float c = 0.707107, d=0.3535532, e=0.25;
+                struct fault_injection_s fault_injection_topic;  //zxzxzxzx
+
+                at_ct[0] = controls.control[0];
+                at_ct[1] = controls.control[1];
+                at_ct[2] = controls.control[2];
+                at_ct[3] = controls.control[3];
+
+                orb_copy(ORB_ID(fault_injection), _t_fault_injection, &fault_injection_topic); //zxzxzxzx
+
+                esc_out[0] = -c*at_ct[0] + c*at_ct[1] + at_ct[2] + at_ct[3];
+                esc_out[1] =  c*at_ct[0] - c*at_ct[1] + at_ct[2] + at_ct[3];
+                esc_out[2] =  c*at_ct[0] + c*at_ct[1] - at_ct[2] + at_ct[3];
+                esc_out[3] = -c*at_ct[0] - c*at_ct[1] - at_ct[2] + at_ct[3];
+
+                switch(fault_injection_topic.fault_name){
+                    case 1: esc_out[0] = 0; break;
+                    case 2: esc_out[1] = 0; break;
+                    case 3: esc_out[2] = 0; break;
+                    case 4: esc_out[3] = 0; break;
+                    default: break;
+                }
+                //esc_out[3] = 0;
+
+
+                controls.control[0] = -d*esc_out[0] + d*esc_out[1] + d*esc_out[2] - d*esc_out[3];
+                controls.control[1] =  d*esc_out[0] - d*esc_out[1] + d*esc_out[2] - d*esc_out[3];
+                controls.control[2] =  e*esc_out[0] + e*esc_out[1] - e*esc_out[2] - e*esc_out[3];
+                controls.control[3] =  e*esc_out[0] + e*esc_out[1] + e*esc_out[2] + e*esc_out[3];
+
+
+//                PX4_INFO("\n%.3f %.3f %.3f %.3f\n%.3f %.3f %.3f %.3f",
+//                         (double)glo_controls.control[0],(double)glo_controls.control[1],(double)glo_controls.control[2],(double)glo_controls.control[3],
+//                         (double)controls.control[0],(double)controls.control[1],(double)controls.control[2],(double)controls.control[3]);
+
+//                struct fault_injection_s fault_injection_topic;
+//                static uint8_t my_sig[4] = {0,0,0,0};
+//                static float my_value[4] = {0,0,0,0};
+//                orb_copy(ORB_ID(fault_injection), _t_fault_injection, &fault_injection_topic); //zxzxzxzx
+//                switch(fault_injection_topic.fault_name){
+//                    case 1: my_sig[0] = 1; my_value[0] = fault_injection_topic.fault_value/10000; break;
+//                    case 2: my_sig[1] = 1; my_value[1] = fault_injection_topic.fault_value/10000; break;
+//                    case 3: my_sig[2] = 1; my_value[2] = fault_injection_topic.fault_value/10000; break;
+//                    case 4: my_sig[3] = 1; my_value[3] = fault_injection_topic.fault_value/10000; break;
+//                    case 0: my_sig[0] = 0; my_sig[1] = 0; my_sig[2] = 0; my_sig[3] = 0; break;
+//                }
+//                if(my_sig[0]==1) controls.control[0] = my_value[0];
+//                if(my_sig[1]==1) controls.control[1] = my_value[1];
+//                if(my_sig[2]==1) controls.control[2] = my_value[2];
+//                if(my_sig[3]==1) controls.control[3] = my_value[3];
+
+
+                /***************************************zxzxzxzx****************************************/
 				perf_set_elapsed(_perf_sample_latency, hrt_elapsed_time(&controls.timestamp_sample));
 			}
 		}
@@ -1329,7 +1390,7 @@ PX4IO::io_set_control_state(unsigned group)
 	}
 
 	if (!_test_fmu_fail) {
-		/* copy values to registers in IO */
+        /* copy values to registers in IO */
 		return io_reg_set(PX4IO_PAGE_CONTROLS, group * PX4IO_PROTOCOL_MAX_CONTROL_COUNT, regs, _max_controls);
 
 	} else {
@@ -1886,7 +1947,7 @@ PX4IO::io_publish_pwm_outputs()
 {
 	/* get servo values from IO */
 	uint16_t ctl[_max_actuators];
-	int ret = io_reg_get(PX4IO_PAGE_SERVOS, 0, ctl, _max_actuators);
+    int ret = io_reg_get(PX4IO_PAGE_SERVOS, 0, ctl, _max_actuators);
 
 	if (ret != OK) {
 		return ret;
@@ -1900,6 +1961,27 @@ PX4IO::io_publish_pwm_outputs()
 	for (unsigned i = 0; i < _max_actuators; i++) {
 		outputs.output[i] = ctl[i];
 	}
+
+    /* obtained data for the first file descriptor */
+//    struct fault_injection_s fault_injection_topic;
+//    fault_injection_topic.fault_name = 0;
+//    /* copy sensors raw data into local buffer */
+//    orb_copy(ORB_ID(fault_injection), _t_fault_injection, &fault_injection_topic);
+//    if(fault_injection_topic.fault_name == 1){
+//        outputs.output[0] = fault_injection_topic.fault_value;
+//    }else if(fault_injection_topic.fault_name == 2){
+//        outputs.output[1] = fault_injection_topic.fault_value;
+//    }else if(fault_injection_topic.fault_name == 3){
+//        outputs.output[2] = fault_injection_topic.fault_value;
+//    }else if(fault_injection_topic.fault_name == 4){
+//        outputs.output[3] = fault_injection_topic.fault_value;
+//    }
+//    static int runs_count = 0;  //zxzxzxzx
+//    runs_count ++;
+//    if(runs_count % 15 == 0){
+//        //PX4_INFO("fxxk!!! %d %d",fault_injection_topic.fault_name,_t_fault_injection);
+//        PX4_INFO("\n%.3f %.3f %.3f %.3f\n%5f %5f %5f %5f",(double)glo_controls.control[0],(double)glo_controls.control[1],(double)glo_controls.control[2],(double)glo_controls.control[3],(double)outputs.output[0],(double)outputs.output[1],(double)outputs.output[2],(double)outputs.output[3]);
+//    }
 
 	int instance;
 	orb_publish_auto(ORB_ID(actuator_outputs), &_to_outputs, &outputs, &instance, ORB_PRIO_DEFAULT);
@@ -2327,7 +2409,7 @@ PX4IO::print_status(bool extended_status)
 	for (unsigned group = 0; group < 4; group++) {
 		printf("controls %u:", group);
 
-		for (unsigned i = 0; i < _max_controls; i++) {
+        for (unsigned i = 0; i < _max_controls; i++) {
 			printf(" %hd", (int16_t) io_reg_get(PX4IO_PAGE_CONTROLS, group * PX4IO_PROTOCOL_MAX_CONTROL_COUNT + i));
 		}
 
@@ -2381,7 +2463,7 @@ PX4IO::print_status(bool extended_status)
 int
 PX4IO::ioctl(file *filep, int cmd, unsigned long arg)
 {
-	int ret = OK;
+    int ret = OK;
 
 	/* regular ioctl? */
 	switch (cmd) {
@@ -2873,7 +2955,7 @@ PX4IO::write(file * /*filp*/, const char *buffer, size_t len)
 		int ret = OK;
 
 		/* The write() is silently ignored in test mode. */
-		if (!_test_fmu_fail) {
+        if (!_test_fmu_fail) {
 			ret = io_reg_set(PX4IO_PAGE_DIRECT_PWM, 0, (uint16_t *)buffer, count);
 		}
 

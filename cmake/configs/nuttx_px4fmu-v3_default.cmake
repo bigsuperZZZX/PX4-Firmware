@@ -14,8 +14,8 @@ set(config_module_list
 	# Board support modules
 	#
 	drivers/barometer
-	drivers/differential_pressure
-	drivers/distance_sensor
+        drivers/differential_pressure
+        drivers/distance_sensor
 	drivers/magnetometer
 	drivers/telemetry
 
@@ -95,6 +95,7 @@ set(config_module_list
 	modules/mavlink
 	modules/navigator
 	modules/uavcan
+	modules/fault_injection
 
 	#
 	# Estimation modules

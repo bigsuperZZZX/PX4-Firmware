@@ -350,7 +350,7 @@ int motor_ramp_thread_main(int argc, char *argv[])
 		}
 
 		last_run = hrt_absolute_time();
-		timer = hrt_elapsed_time(&start) * 1e-6;
+        timer = hrt_elapsed_time(&start) * 1e-6;
 
 		switch (ramp_state) {
 		case RAMP_INIT: {

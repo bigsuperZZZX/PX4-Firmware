@@ -193,7 +193,7 @@ void pwm_limit_calc(const bool armed, const bool pre_armed, const unsigned num_c
 
 	case PWM_LIMIT_STATE_ON:
 
-		for (unsigned i = 0; i < num_channels; i++) {
+        for (unsigned i = 0; i < num_channels; i++) {
 
 			float control_value = output[i];
 

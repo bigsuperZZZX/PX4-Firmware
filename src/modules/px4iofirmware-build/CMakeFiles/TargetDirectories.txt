@@ -1,0 +1,3 @@
+/home/myros/PX4learn/Firmware/src/modules/px4iofirmware-build/CMakeFiles/edit_cache.dir
+/home/myros/PX4learn/Firmware/src/modules/px4iofirmware-build/CMakeFiles/rebuild_cache.dir
+/home/myros/PX4learn/Firmware/src/modules/px4iofirmware-build/CMakeFiles/px4iofirmware.dir

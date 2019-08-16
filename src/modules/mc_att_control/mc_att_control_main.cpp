@@ -767,6 +767,26 @@ MulticopterAttitudeControl::run()
 				if (!_actuators_0_circuit_breaker_enabled) {
 					if (_actuators_0_pub != nullptr) {
 
+//                        static int runs_count = 0;
+//                        runs_count ++;
+//                        if(runs_count % 50 == 0){
+//                            //PX4_INFO("fxxk!!! %d %d",fault_injection_topic.fault_name,_t_fault_injection);
+//                            PX4_INFO("774 %7.3f %7.3f %7.3f %7.3f",(double)_actuators.control[0],(double)_actuators.control[1],(double)_actuators.control[2],(double)_actuators.control[3]);
+//                        }
+//                        _actuators.control[0] = 0;
+//                        _actuators.control[1] = 0;
+//                        _actuators.control[2] = 0;
+//                        static unsigned int calls_count = 0;
+//                        calls_count ++;
+//                        if(calls_count > 1500)
+//                            calls_count = 0;
+//                        else if(calls_count > 1000)
+//                            _actuators.control[3] = 1;
+//                        else if(calls_count > 500)
+//                            _actuators.control[3] = 0.5;
+//                        else if(calls_count > 0)
+//                            _actuators.control[3] = 0;
+
 						orb_publish(_actuators_id, _actuators_0_pub, &_actuators);
 
 					} else if (_actuators_id) {
@@ -808,6 +828,13 @@ MulticopterAttitudeControl::run()
 					if (!_actuators_0_circuit_breaker_enabled) {
 						if (_actuators_0_pub != nullptr) {
 
+
+                            static int runs_count = 0;
+                            runs_count ++;
+                            if(runs_count % 250 == 0){
+                                //PX4_INFO("fxxk!!! %d %d",fault_injection_topic.fault_name,_t_fault_injection);
+                                PX4_INFO("823 %5f %5f %5f %6f",(double)_actuators.control[0],(double)_actuators.control[1],(double)_actuators.control[2],(double)_actuators.control[3]);
+                            }
 							orb_publish(_actuators_id, _actuators_0_pub, &_actuators);
 
 						} else if (_actuators_id) {

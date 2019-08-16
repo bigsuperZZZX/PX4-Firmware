@@ -106,7 +106,7 @@ void VotedSensorsUpdate::initialize_sensors()
 	init_sensor_class(ORB_ID(sensor_gyro), _gyro, GYRO_COUNT_MAX);
 	init_sensor_class(ORB_ID(sensor_mag), _mag, MAG_COUNT_MAX);
 	init_sensor_class(ORB_ID(sensor_accel), _accel, ACCEL_COUNT_MAX);
-	init_sensor_class(ORB_ID(sensor_baro), _baro, BARO_COUNT_MAX);
+    init_sensor_class(ORB_ID(sensor_baro), _baro, BARO_COUNT_MAX);
 }
 
 void VotedSensorsUpdate::deinit()
@@ -158,7 +158,7 @@ void VotedSensorsUpdate::parameters_update()
 			struct gyro_report report;
 
 			if (orb_copy(ORB_ID(sensor_gyro), _gyro.subscription[topic_instance], &report) == 0) {
-				int temp = _temperature_compensation.set_sensor_id_gyro(report.device_id, topic_instance);
+                int temp = _temperature_compensation.set_sensor_id_gyro(report.device_id, topic_instance);
 
 				if (temp < 0) {
 					PX4_ERR("%s temp compensation init: failed to find device ID %u for instance %i",
@@ -538,14 +538,14 @@ void VotedSensorsUpdate::parameters_update()
 void VotedSensorsUpdate::accel_poll(struct sensor_combined_s &raw)
 {
 	float *offsets[] = {_corrections.accel_offset_0, _corrections.accel_offset_1, _corrections.accel_offset_2 };
-	float *scales[] = {_corrections.accel_scale_0, _corrections.accel_scale_1, _corrections.accel_scale_2 };
+    float *scales[] = {_corrections.accel_scale_0, _corrections.accel_scale_1, _corrections.accel_scale_2 };
 
 	for (unsigned uorb_index = 0; uorb_index < _accel.subscription_count; uorb_index++) {
 		bool accel_updated;
 		orb_check(_accel.subscription[uorb_index], &accel_updated);
 
 		if (accel_updated && _accel.enabled[uorb_index]) {
-			struct accel_report accel_report;
+            struct accel_report accel_report;
 
 			int ret = orb_copy(ORB_ID(sensor_accel), _accel.subscription[uorb_index], &accel_report);
 
@@ -643,20 +643,20 @@ void VotedSensorsUpdate::accel_poll(struct sensor_combined_s &raw)
 void VotedSensorsUpdate::gyro_poll(struct sensor_combined_s &raw)
 {
 	float *offsets[] = {_corrections.gyro_offset_0, _corrections.gyro_offset_1, _corrections.gyro_offset_2 };
-	float *scales[] = {_corrections.gyro_scale_0, _corrections.gyro_scale_1, _corrections.gyro_scale_2 };
+    float *scales[] = {_corrections.gyro_scale_0, _corrections.gyro_scale_1, _corrections.gyro_scale_2 };
 
 	for (unsigned uorb_index = 0; uorb_index < _gyro.subscription_count; uorb_index++) {
 		bool gyro_updated;
 		orb_check(_gyro.subscription[uorb_index], &gyro_updated);
 
-		if (gyro_updated && _gyro.enabled[uorb_index]) {
+        if (gyro_updated && _gyro.enabled[uorb_index]) {
 			struct gyro_report gyro_report;
 
-			int ret = orb_copy(ORB_ID(sensor_gyro), _gyro.subscription[uorb_index], &gyro_report);
+            int ret = orb_copy(ORB_ID(sensor_gyro), _gyro.subscription[uorb_index], &gyro_report);
 
 			if (ret != PX4_OK || gyro_report.timestamp == 0) {
 				continue; //ignore invalid data
-			}
+            }
 
 			// First publication with data
 			if (_gyro.priority[uorb_index] == 0) {
@@ -1061,7 +1061,7 @@ void VotedSensorsUpdate::sensors_poll(sensor_combined_s &raw, vehicle_air_data_s
 	accel_poll(raw);
 	gyro_poll(raw);
 	mag_poll(magnetometer);
-	baro_poll(airdata);
+    baro_poll(airdata);
 
 	// publish sensor corrections if necessary
 	if (!_hil_enabled && _corrections_changed) {

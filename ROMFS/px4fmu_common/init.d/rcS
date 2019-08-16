@@ -992,6 +992,8 @@ fi
 # End of autostart
 fi
 
+fault_injection start
+
 # There is no further script processing, so we can free some RAM
 # XXX potentially unset all script variables.
 unset TUNE_ERR

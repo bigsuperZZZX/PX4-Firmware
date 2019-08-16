@@ -104,7 +104,7 @@ int mixer_mix_threadsafe(float *outputs, volatile uint16_t *limits)
 	}
 
 	in_mixer = true;
-	int mixcount = mixer_group.mix(&outputs[0], PX4IO_SERVO_COUNT);
+    int mixcount = mixer_group.mix(&outputs[0], PX4IO_SERVO_COUNT);
 	*limits = mixer_group.get_saturation_status();
 	in_mixer = false;
 
@@ -270,7 +270,7 @@ mixer_tick(void)
 			r_page_servos[i] = r_page_servo_failsafe[i];
 
 			/* safe actuators for FMU feedback */
-			r_page_actuators[i] = FLOAT_TO_REG((r_page_servos[i] - 1500) / 600.0f);
+            r_page_actuators[i] = FLOAT_TO_REG((r_page_servos[i] - 1500) / 600.0f);
 		}
 
 
@@ -297,7 +297,7 @@ mixer_tick(void)
 		}
 
 		/* mix */
-		mixed = mixer_mix_threadsafe(&outputs[0], &r_mixer_limits);
+        mixed = mixer_mix_threadsafe(&outputs[0], &r_mixer_limits);
 
 		/* the pwm limit call takes care of out of band errors */
 		pwm_limit_calc(should_arm, should_arm_nothrottle, mixed, r_setup_pwm_reverse, r_page_servo_disarmed,
@@ -307,12 +307,12 @@ mixer_tick(void)
 		for (unsigned i = mixed; i < PX4IO_SERVO_COUNT; i++) {
 			r_page_servos[i] = 0;
 			outputs[i] = 0.0f;
-		}
+        }
 
 		/* store normalized outputs */
 		for (unsigned i = 0; i < PX4IO_SERVO_COUNT; i++) {
-			r_page_actuators[i] = FLOAT_TO_REG(outputs[i]);
-		}
+            r_page_actuators[i] = FLOAT_TO_REG(outputs[i]);
+        }
 
 
 		if (mixed  && new_fmu_data) {
@@ -323,7 +323,7 @@ mixer_tick(void)
 			 */
 
 			up_pwm_update();
-		}
+        }
 	}
 
 	/* set arming */
@@ -637,7 +637,7 @@ mixer_set_failsafe()
 	}
 
 	/* mix */
-	mixed = mixer_mix_threadsafe(&outputs[0], &r_mixer_limits);
+    mixed = mixer_mix_threadsafe(&outputs[0], &r_mixer_limits);
 
 	/* scale to PWM and update the servo outputs as required */
 	for (unsigned i = 0; i < mixed; i++) {

@@ -578,12 +578,12 @@ MK::task_main()
 							if (outputs.output[i] < BLCTRL_MIN_VALUE) {
 								outputs.output[i] = BLCTRL_MIN_VALUE;
 							}
-						}
+                        }
 
 						/* output to BLCtrl's */
 						if (_motortest != true && _indicate_esc != true) {
-							Motor[i].SetPoint_PX4 = outputs.output[i];
-							mk_servo_set(i, scaling(outputs.output[i], -1.0f, 1.0f, 0,
+                            Motor[i].SetPoint_PX4 = outputs.output[i];
+                            mk_servo_set(i, scaling(outputs.output[i], -1.0f, 1.0f, 0,
 										2047));	// scale the output to 0 - 2047 and sent to output routine
 						}
 					}

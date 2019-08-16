@@ -98,9 +98,9 @@ static void update_mem_usage(void);
 void
 isr_debug(uint8_t level, const char *fmt, ...)
 {
-	if (level > r_page_setup[PX4IO_P_SETUP_SET_DEBUG]) {
-		return;
-	}
+    if (level > r_page_setup[PX4IO_P_SETUP_SET_DEBUG]) {
+        return;
+    }
 
 	va_list ap;
 	va_start(ap, fmt);
@@ -446,7 +446,7 @@ user_start(int argc, char *argv[])
 
 		ring_blink();
 
-		check_reboot();
+        check_reboot();
 
 		/* check for debug activity (default: none) */
 		show_debug_messages();

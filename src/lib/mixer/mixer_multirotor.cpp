@@ -149,6 +149,7 @@ MultirotorMixer::from_text(Mixer::ControlCallback control_cb, uintptr_t cb_handl
 unsigned
 MultirotorMixer::mix(float *outputs, unsigned space)
 {
+
 	/* Summary of mixing strategy:
 	1) mix roll, pitch and thrust without yaw.
 	2) if some outputs violate range [0,1] then try to shift all outputs to minimize violation ->
